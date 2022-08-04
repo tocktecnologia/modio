@@ -1,7 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-const char *mqtt_server = "192.168.0.32";
+const char *mqtt_server = "192.168.0.5";
 const char *pub_topic = "tock-commands";
 const char *sub_topic = "tock-commands";
 const char *broker_user = "tocktec.com.br";
@@ -37,18 +37,13 @@ boolean reconnect()
 
     if (client.connect(clientId.c_str(), broker_user, broker_pass))
     {
-        Serial.println(thingName + " connected!");
-        flipper.attach(1, flip); // pisca a cada segundo
+        // Serial.println(thingName + " connected!");
+        flipper.attach(1, flip); // pisca lento se conectado ao wifi
 
         // Once connected, publish an announcement...
         client.publish(pub_topic, "connected");
         // ... and resubscribe
         client.subscribe(sub_topic);
-    }
-    else
-    {
-        Serial.print("failed, rc=");
-        Serial.print(client.state());
     }
 
     return client.connected();
@@ -58,7 +53,6 @@ void setupMQTT()
 {
     client.setServer(mqtt_server, 1883);
     client.setCallback(callback);
-    delay(1500);
     lastReconnectAttempt = 0;
 }
 
@@ -81,7 +75,6 @@ void loopMQTT()
     else
     {
         // Client connected
-
         client.loop();
     }
 }

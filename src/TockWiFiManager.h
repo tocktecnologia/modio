@@ -1,27 +1,24 @@
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
-
-#define TRIGGER_PIN D3
-unsigned int timeout = 120; // seconds to run for
-unsigned int startTime = millis();
-bool portalRunning = false;
-bool startAP = false; // start AP and webserver if true, else start only webserver
+#define TRIGGER_PORTAL D2
 
 WiFiManager wm;
 WiFiManagerParameter custom_mqtt_server("server", "mqtt server", "192.168.0.32", 40);
-WiFiManagerParameter custom_pub_topic("server", "pub topic", "tock-commands", 40);
-WiFiManagerParameter custom_sub_topic("server", "sub topic", "tock-commands", 40);
+WiFiManagerParameter custom_pub_topic("pub_topic", "pub topic", "tock-commands", 40);
+WiFiManagerParameter custom_sub_topic("sub_topic", "sub topic", "tock-commands", 40);
 
 // funcions declarations
 void saveParamsCallback();
-void doWiFiManager();
+void checkConfigButton();
 
 void setupWM()
 {
-    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-    pinMode(TRIGGER_PIN, INPUT_PULLUP);
+    flipper.attach(0.05, flip); // pisca rapido enquanto tenta se conectar ao wifi
+    WiFi.mode(WIFI_STA);        // explicitly set mode, esp defaults to STA+AP
+    pinMode(TRIGGER_PORTAL, OUTPUT);
 
-    // reset settings - wipe credentials for testing
+        // reset settings - wipe credentials for testing
     // wm.resetSettings();
+    wm.setDebugOutput(false);
     wm.addParameter(&custom_mqtt_server);
     wm.addParameter(&custom_pub_topic);
     wm.addParameter(&custom_sub_topic);
@@ -31,14 +28,17 @@ void setupWM()
 
     // automatically connect using saved credentials if they exist
     // If connection fails it starts an access point with the specified name
-    if (wm.autoConnect("AutoConnectAP", "pass"))
+    String ssid = String("TOCK-") + esp8266ID();
+    if (wm.autoConnect(ssid.c_str(), "tock1234"))
     {
         Serial.println("connected...yeey :)");
-        flipper.attach(1, flip); // pisca lento se conectado ao wifi
+        flipper.attach(0.3, flip); // pisca rapido enquanto tenta se conectar ao wifi
+        saveParamsCallback();
     }
     else
     {
         Serial.println("Configportal running");
+        flipper.attach(0.05, flip); // pisca rapido enquanto tenta se conectar ao wifi
     }
 }
 
@@ -46,56 +46,33 @@ void loopWM()
 {
     wm.process();
     // put your main code here, to run repeatedly:
-    doWiFiManager();
-    Serial.println(digitalRead(TRIGGER_PIN));
+
+    checkConfigButton();
+}
+
+void checkConfigButton()
+{
+    if (digitalRead(TRIGGER_PORTAL))
+    {
+        delay(1000);
+        if (digitalRead(TRIGGER_PORTAL))
+        {
+            flipper.detach(); // pisca lento se conectado ao wifi
+            digitalWrite(LED_BUILTIN, 1);
+            wm.resetSettings(); // reset settings?
+            //  wm.setConfigPortalBlocking(false);
+            //  wm.startConfigPortal();
+            wm.startWebPortal();
+            delay(1000);
+            ESP.reset();
+        }
+    }
 }
 
 void saveParamsCallback()
 {
     Serial.println("Get Params:");
-    Serial.print(String(custom_mqtt_server.getID()) + String(":") + custom_mqtt_server.getValue());
-    Serial.print(String(custom_pub_topic.getID()) + String(":") + custom_pub_topic.getValue());
-    Serial.print(String(custom_sub_topic.getID()) + String(":") + custom_sub_topic.getValue());
-}
-
-void doWiFiManager()
-{
-    // is auto timeout portal running
-    if (portalRunning)
-    {
-        wm.process(); // do processing
-
-        // check for timeout
-        if ((millis() - startTime) > (timeout * 1000))
-        {
-            Serial.println("portaltimeout");
-            portalRunning = false;
-            if (startAP)
-            {
-                wm.stopConfigPortal();
-            }
-            else
-            {
-                wm.stopWebPortal();
-            }
-        }
-    }
-
-    // is configuration portal requested?
-    if (digitalRead(TRIGGER_PIN) == LOW && (!portalRunning))
-    {
-        if (startAP)
-        {
-            Serial.println("Button Pressed, Starting Config Portal");
-            wm.setConfigPortalBlocking(false);
-            wm.startConfigPortal();
-        }
-        else
-        {
-            Serial.println("Button Pressed, Starting Web Portal");
-            wm.startWebPortal();
-        }
-        portalRunning = true;
-        startTime = millis();
-    }
+    Serial.println(String(custom_mqtt_server.getID()) + String(":") + custom_mqtt_server.getValue());
+    Serial.println(String(custom_pub_topic.getID()) + String(":") + custom_pub_topic.getValue());
+    Serial.println(String(custom_sub_topic.getID()) + String(":") + custom_sub_topic.getValue());
 }
