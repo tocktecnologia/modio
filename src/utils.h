@@ -1,3 +1,6 @@
+#ifndef UTILS
+#define UTILS
+
 #include <ESP8266WiFi.h>
 #include <Ticker.h>
 
@@ -13,3 +16,51 @@ String esp8266ID()
     WiFi.macAddress(mac);
     return String(mac[2], HEX) + String(mac[3], HEX) + String(mac[4], HEX) + String(mac[5], HEX);
 }
+
+bool tockDebug = false;
+void tockPrint(String str)
+{
+    if (tockDebug)
+    {
+        Serial.print("TOCK:");
+        Serial.println(str);
+    }
+}
+
+String readFile(fs::FS &fs, const char *path)
+{
+    Serial.printf("Reading file: %s\r\n", path);
+    File file = fs.open(path, "r");
+    if (!file || file.isDirectory())
+    {
+        return String();
+    }
+    String fileContent;
+    while (file.available())
+    {
+        fileContent += String((char)file.read());
+    }
+    file.close();
+    // Serial.println(fileContent);
+    return fileContent;
+}
+String writeFile(fs::FS &fs, const char *path, const char *message)
+{
+    File file = fs.open(path, "w");
+    if (!file)
+    {
+        return String();
+    }
+    if (file.print(message))
+    {
+        file.close();
+        return String(message);
+    }
+    else
+    {
+        file.close();
+        return String();
+    }
+}
+
+#endif
