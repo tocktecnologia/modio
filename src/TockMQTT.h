@@ -42,6 +42,11 @@ void callback(char *topic, byte *payload, unsigned int length)
             int state = jp.value();
             if(pinId>0){     
                 int pinOut = String(wifiParamsPins[pinId-1].getID()).toInt();
+                Serial.print("digitalWrite -> pinOut: ");
+                Serial.print(pinOut);
+                Serial.print(" state: ");
+                Serial.println(state);
+                
                 digitalWrite(pinOut,state);
             }
         }
