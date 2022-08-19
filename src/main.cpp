@@ -1,4 +1,3 @@
-#define N_PINS 13
 #define TRIGGER_PORTAL 4
 
 #include <Arduino.h>

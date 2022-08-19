@@ -25,8 +25,30 @@ void callback(char *topic, byte *payload, unsigned int length)
         Serial.print((char)payload[i]);
         payloadString = payloadString + (char)payload[i];
     }
-
     Serial.println();
+
+     // if is a output module
+     if(String(custom_io.getValue()) == "o"){
+        StaticJsonDocument<256> fileJson;
+        JsonObject fileJsonObj;
+        //debug
+        deserializeJson(fileJson, payloadString);
+        fileJsonObj = fileJson.as<JsonObject>()["state"]["desired"];
+        //debug
+        serializeJsonPretty(fileJson,Serial);
+
+        for (JsonPair jp : fileJsonObj) {
+            int pinId = String(jp.key().c_str()).substring(3).toInt();
+            int state = jp.value();
+            if(pinId>0){     
+                int pinOut = String(wifiParamsPins[pinId-1].getID()).toInt();
+                digitalWrite(pinOut,state);
+            }
+        }
+
+    } else Serial.print("pyload should be json");
+
+
 }
 
 boolean reconnect()
@@ -45,7 +67,9 @@ boolean reconnect()
         Serial.println(thingName + " connected!");
         client.publish(pub_topic, "connected");
         client.subscribe(sub_topic);
-        flipper.attach(1, flip);
+        // flipper.attach(1, flip);
+        flipper.detach();
+
     }
 
     return client.connected();
