@@ -11,14 +11,13 @@ WiFiManagerParameter custom_io("IO", "In/Out", "o", 1);
 WiFiManagerParameter custom_server("server", "server", "192.168.0.5", 15);
 WiFiManagerParameter custom_pin1("16", "GPIO 16", "1", 3);
 WiFiManagerParameter custom_pin2("5", "GPIO 05", "2", 3);
-WiFiManagerParameter custom_pin3("4", "GPIO 04", "3", 3);
-WiFiManagerParameter custom_pin4("0", "GPIO 0", "4", 3);
-WiFiManagerParameter custom_pin5("3", "GPIO 02", "5", 3);
-WiFiManagerParameter custom_pin6("14", "GPIO 14", "6", 3);
-WiFiManagerParameter custom_pin7("12", "GPIO 12", "7", 3);
-WiFiManagerParameter custom_pin8("13", "GPIO 13", "8", 3);
-WiFiManagerParameter custom_pin9("15", "GPIO 15", "9", 3);
-WiFiManagerParameter custom_pin10("10", "GPIO 10", "10", 3);
+WiFiManagerParameter custom_pin3("0", "GPIO 0", "3", 3);
+WiFiManagerParameter custom_pin4("3", "GPIO 03", "4", 3);
+WiFiManagerParameter custom_pin5("14", "GPIO 14", "5", 3);
+WiFiManagerParameter custom_pin6("12", "GPIO 12", "6", 3);
+WiFiManagerParameter custom_pin7("13", "GPIO 13", "7", 3);
+WiFiManagerParameter custom_pin8("15", "GPIO 15", "8", 3);
+WiFiManagerParameter custom_pin9("10", "GPIO 10", "9", 3);
 
 std::vector<WiFiManagerParameter> wifiParamsPins(12);
 
@@ -61,7 +60,6 @@ void setupWM() {
         custom_pin7.setValue(fileJsonObj["Pin7"].as<String>().c_str(),3);
         custom_pin8.setValue(fileJsonObj["Pin8"].as<String>().c_str(),3);
         custom_pin9.setValue(fileJsonObj["Pin9"].as<String>().c_str(),3);
-        custom_pin10.setValue(fileJsonObj["Pin10"].as<String>().c_str(),3);
     
 
         fileJson.clear();
@@ -80,7 +78,6 @@ void setupWM() {
     wm.addParameter(&custom_pin7);
     wm.addParameter(&custom_pin8);
     wm.addParameter(&custom_pin9);
-    wm.addParameter(&custom_pin10);
 
     wm.setSaveParamsCallback(saveParamsCallback);
     wm.setConnectTimeout(30);
@@ -115,7 +112,6 @@ void saveParamsCallback () {
     jsonToFile["Pin7"] = custom_pin7.getValue();
     jsonToFile["Pin8"] = custom_pin8.getValue();
     jsonToFile["Pin9"] = custom_pin9.getValue();
-    jsonToFile["Pin10"] = custom_pin10.getValue();
 
     writeFile(LittleFS, filepath, jsonToFile.as<String>().c_str());
 
@@ -142,7 +138,6 @@ void checkConfigButton()
     }
 }
 
-
 void configurePins(){
         wifiParamsPins.clear();
         wifiParamsPins.push_back(custom_pin1);
@@ -154,7 +149,6 @@ void configurePins(){
         wifiParamsPins.push_back(custom_pin7);
         wifiParamsPins.push_back(custom_pin8);
         wifiParamsPins.push_back(custom_pin9);
-        wifiParamsPins.push_back(custom_pin10);
 
         for(unsigned int i=0;i<wifiParamsPins.size();i++){
             int pinId = String(wifiParamsPins[i].getID()).toInt();
