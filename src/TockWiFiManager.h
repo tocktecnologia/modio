@@ -13,7 +13,7 @@ WiFiManagerParameter custom_pin1("16", "GPIO 16", "1", 3);
 WiFiManagerParameter custom_pin2("5", "GPIO 05", "2", 3);
 WiFiManagerParameter custom_pin3("4", "GPIO 04", "3", 3);
 WiFiManagerParameter custom_pin4("0", "GPIO 0", "4", 3);
-WiFiManagerParameter custom_pin5("2", "GPIO 02", "5", 3);
+WiFiManagerParameter custom_pin5("3", "GPIO 02", "5", 3);
 WiFiManagerParameter custom_pin6("14", "GPIO 14", "6", 3);
 WiFiManagerParameter custom_pin7("12", "GPIO 12", "7", 3);
 WiFiManagerParameter custom_pin8("13", "GPIO 13", "8", 3);

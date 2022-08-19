@@ -67,9 +67,8 @@ boolean reconnect()
         Serial.println(thingName + " connected!");
         client.publish(pub_topic, "connected");
         client.subscribe(sub_topic);
-        // flipper.attach(1, flip);
-        flipper.detach();
-
+        flipper.attach(1, flip);
+       
     }
 
     return client.connected();
