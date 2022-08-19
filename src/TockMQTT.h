@@ -14,6 +14,8 @@ PubSubClient client(espClient);
 unsigned long lastMsg = 0;
 long lastReconnectAttempt = 0;
 
+void checkPinsIn();
+
 void callback(char *topic, byte *payload, unsigned int length)
 {
     Serial.print("Message arrived [");
@@ -44,7 +46,7 @@ void callback(char *topic, byte *payload, unsigned int length)
                 int pinOut = String(wifiParamsPins[pinId-1].getID()).toInt();
                 Serial.print("digitalWrite -> pinOut: ");
                 Serial.print(pinOut);
-                Serial.print(" state: ");
+                Serial.print(" ;state: ");
                 Serial.println(state);
                 
                 digitalWrite(pinOut,state);
@@ -112,34 +114,26 @@ void loopMQTT()
         // Client connected
         client.loop();
     }
+
+    checkPinsIn();
 }
 
-void sendResponse(int index_state, String command)
-{
-    // delay(1);
-    // String pinSaida2;
 
-    // // Troca pinoXXX da mensagem Serial pelo pino da saída correta.
-    // DynamicJsonBuffer jsonBuffer2;
-    // JsonObject &jsPinos = jsonBuffer2.parseObject((jsonPinos));
-    // String comando = "pin" + String(command[index_state]) + String(command[index_state + 1]);
+void checkPinsIn(){
+    if(String(custom_io.getValue()) == "i"){
+        
+        for(int i=0;i<wifiParamsPins.size();i++){
 
-    // for (JsonPair keyState : jsPinos)
-    // {
-    //     String key = keyState.key;
-    //     if (key == comando)
-    //     {
-    //         String pinSaida = jsPinos[key];
-    //         pinSaida2 = pinSaida;
-    //     }
-    // } // for
-
-    // String msg = "{\"" + pinSaida2 + "\": \"x\"}";
-
-    // String desiredState = "{\"state\": {\"desired\": " + msg + "}}";
-    // char desiredState_charBuf[100];
-    // desiredState.toCharArray(desiredState_charBuf, 100);
-    // client.publish(pub_topic, desiredState_charBuf);
-
-    // Serial.println("Mensagem publicada : " + desiredState);
+            int pinId = String(wifiParamsPins[i].getID()).toInt();
+            if(!digitalRead(pinId)){
+                Serial.println("sending mqtt ...");
+                
+                String msg = "{\"" + String(pinId) + "\": \"x\"}";
+                String desiredState = "{\"state\": {\"desired\": " + msg + "}}";
+                char desiredState_charBuf[100];
+                desiredState.toCharArray(desiredState_charBuf, 100);
+                client.publish(pub_topic, desiredState_charBuf);
+            }
+        }
+    }
 }
