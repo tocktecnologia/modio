@@ -1,5 +1,5 @@
-#define TRIGGER_PORTAL 4
-#define LED_BUILTIN 2
+#define TRIGGER_PORTAL 4 //GPIO 4
+#define LED_BUILTIN 2 //GPIO 2
 
 #include <Arduino.h>
 #include "TockWiFiManager.h"

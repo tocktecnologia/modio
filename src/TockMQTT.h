@@ -1,7 +1,7 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-const char *mqtt_server = "192.168.0.5"; // "192.168.0.5";
+// const char *mqtt_server = "192.168.0.5"; // "192.168.0.5";
 const char *pub_topic = "tock-commands";
 const char *sub_topic = "tock-commands";
 const char *broker_user = "tocktec.com.br";
@@ -37,23 +37,54 @@ void callback(char *topic, byte *payload, unsigned int length)
         //debug
         serializeJsonPretty(fileJson,Serial);
 
+        if(!fileJson.as<JsonObject>()["state"].containsKey("desired")) return;
+
+
+        // StaticJsonDocument<256> jsonToFile;
         for (JsonPair jp : fileJsonObj) {
             int pinId = String(jp.key().c_str()).substring(3).toInt();
-            int state = jp.value();
-            if(pinId>0){     
+            String state = jp.value();
+            if(pinId>0){
                 int pinOut = String(wifiParamsPins[pinId-1].getID()).toInt();
+                if(state == "x" || state == "X"){
+                    state = (String)!digitalRead(pinOut);
+                }
                 Serial.print("digitalWrite -> pinOut: ");
                 Serial.print(pinOut);
                 Serial.print(" state: ");
-                Serial.println(state);
+                Serial.println(state.toInt());
                 
-                digitalWrite(pinOut,state);
+                digitalWrite(pinOut,state.toInt());
+                // jsonToFile["server"] = custom_server.getValue();
+                // jsonToFile["Pin1"] = custom_pin1.getValue();
+                // jsonToFile["Pin2"] = custom_pin2.getValue();
+                // jsonToFile["Pin3"] = custom_pin3.getValue();
+                // jsonToFile["Pin4"] = custom_pin4.getValue();
+                // jsonToFile["Pin5"] = custom_pin5.getValue();
+                // jsonToFile["Pin6"] = custom_pin6.getValue();
+                // jsonToFile["Pin7"] = custom_pin7.getValue();
+                // jsonToFile["Pin8"] = custom_pin8.getValue();
+                // jsonToFile["Pin9"] = custom_pin9.getValue();
+                             
             }
         }
+        // writeFile(LittleFS, filepath, jsonToFile.as<String>().c_str());
+        // jsonToFile.clear();  
+
+        String reportedMessage = "{\"state\": {\"reported\": {"+
+            String("\"pin") + String(custom_pin1.getValue())+"\": " + String(digitalRead(atoi(custom_pin1.getID()))) +
+            ",\"pin" + String(custom_pin3.getValue())+"\": " + String(digitalRead(atoi(custom_pin3.getID()))) + 
+            ",\"pin" + String(custom_pin2.getValue())+"\": " + String(digitalRead(atoi(custom_pin2.getID()))) + 
+            ",\"pin" + String(custom_pin4.getValue())+"\": " + String(digitalRead(atoi(custom_pin4.getID()))) + 
+            ",\"pin" + String(custom_pin5.getValue())+"\": " + String(digitalRead(atoi(custom_pin5.getID()))) + 
+            ",\"pin" + String(custom_pin6.getValue())+"\": " + String(digitalRead(atoi(custom_pin6.getID()))) + 
+            ",\"pin" + String(custom_pin7.getValue())+"\": " + String(digitalRead(atoi(custom_pin7.getID()))) + 
+            ",\"pin" + String(custom_pin8.getValue())+"\": " + String(digitalRead(atoi(custom_pin8.getID()))) + 
+            "}}}";
+        
+        client.publish(pub_topic, reportedMessage.c_str());
 
     } else Serial.print("pyload should be json");
-
-
 }
 
 boolean reconnect()
@@ -63,7 +94,7 @@ boolean reconnect()
     clientId += String(random(0xffff), HEX);
 
     Serial.print("Try connecting to ");
-    Serial.print(mqtt_server);
+    Serial.print(custom_server.getValue());
     Serial.println(" ...");
     flipper.attach(0.2, flip); // pisca lento se conectado ao wifi
 
@@ -81,7 +112,7 @@ boolean reconnect()
 
 void setupMQTT()
 {
-    client.setServer(mqtt_server, 1883);
+    client.setServer(custom_server.getValue(), 1883);
     client.setCallback(callback);
     lastReconnectAttempt = 0;
 
