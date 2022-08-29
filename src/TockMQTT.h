@@ -28,7 +28,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     Serial.println();
 
      // if is a output module
-     if(String(custom_io.getValue()) == "o"){
+    if(String(custom_io.getValue()) == "o"){
         StaticJsonDocument<256> fileJson;
         JsonObject fileJsonObj;
         //debug
@@ -55,6 +55,20 @@ void callback(char *topic, byte *payload, unsigned int length)
                 Serial.println(state.toInt());
                 
                 digitalWrite(pinOut,state.toInt());
+                
+                switch (pinId)
+                {
+                case 1:custom_pin1.setLabelPlacement(state.toInt());break;
+                case 2:custom_pin2.setLabelPlacement(state.toInt());break;
+                case 3:custom_pin3.setLabelPlacement(state.toInt());break;
+                case 4:custom_pin4.setLabelPlacement(state.toInt());break;
+                case 5:custom_pin5.setLabelPlacement(state.toInt());break;
+                case 6:custom_pin6.setLabelPlacement(state.toInt());break;
+                case 7:custom_pin7.setLabelPlacement(state.toInt());break;
+                case 8:custom_pin8.setLabelPlacement(state.toInt());break;
+                default:
+                    break;
+                }
                 // jsonToFile["server"] = custom_server.getValue();
                 // jsonToFile["Pin1"] = custom_pin1.getValue();
                 // jsonToFile["Pin2"] = custom_pin2.getValue();
@@ -87,8 +101,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     } else Serial.print("pyload should be json");
 }
 
-boolean reconnect()
-{
+boolean reconnect(){
     String thingName = esp8266ID();
     String clientId = "TOCK-" + thingName + "-";
     clientId += String(random(0xffff), HEX);
