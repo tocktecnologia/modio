@@ -27,78 +27,53 @@ void callback(char *topic, byte *payload, unsigned int length)
     }
     Serial.println();
 
-     // if is a output module
-    if(String(custom_io.getValue()) == "o"){
-        StaticJsonDocument<256> fileJson;
-        JsonObject fileJsonObj;
-        //debug
-        deserializeJson(fileJson, payloadString);
-        fileJsonObj = fileJson.as<JsonObject>()["state"]["desired"];
-        //debug
-        serializeJsonPretty(fileJson,Serial);
+     // if is no a output module finsish
+    if(String(custom_io.getValue()) != "o") return;
 
-        if(!fileJson.as<JsonObject>()["state"].containsKey("desired")) return;
+    StaticJsonDocument<256> fileJson;
+    JsonObject fileJsonObj;
+    deserializeJson(fileJson, payloadString);
+    fileJsonObj = fileJson.as<JsonObject>()["state"]["desired"];
+    // serializeJsonPretty(fileJson,Serial); //debug
 
+    if(!fileJson.as<JsonObject>()["state"].containsKey("desired")) return;
+    
+    fileJson.clear();   
+    // iterate over the messsage json
+    for (JsonPair jsonPair : fileJsonObj) {
+        int pinId = String(jsonPair.key().c_str()).substring(3).toInt(); // jsonPair.key = "pin3"
 
-        // StaticJsonDocument<256> jsonToFile;
-        for (JsonPair jp : fileJsonObj) {
-            int pinId = String(jp.key().c_str()).substring(3).toInt();
-            String state = jp.value();
-            if(pinId>0){
-                int pinOut = String(wifiParamsPins[pinId-1].getID()).toInt();
-                if(state == "x" || state == "X"){
-                    state = (String)!digitalRead(pinOut);
-                }
-                Serial.print("digitalWrite -> pinOut: ");
-                Serial.print(pinOut);
-                Serial.print(" state: ");
-                Serial.println(state.toInt());
-                
-                digitalWrite(pinOut,state.toInt());
-                
-                switch (pinId)
-                {
-                case 1:custom_pin1.setLabelPlacement(state.toInt());break;
-                case 2:custom_pin2.setLabelPlacement(state.toInt());break;
-                case 3:custom_pin3.setLabelPlacement(state.toInt());break;
-                case 4:custom_pin4.setLabelPlacement(state.toInt());break;
-                case 5:custom_pin5.setLabelPlacement(state.toInt());break;
-                case 6:custom_pin6.setLabelPlacement(state.toInt());break;
-                case 7:custom_pin7.setLabelPlacement(state.toInt());break;
-                case 8:custom_pin8.setLabelPlacement(state.toInt());break;
-                default:
-                    break;
-                }
-                // jsonToFile["server"] = custom_server.getValue();
-                // jsonToFile["Pin1"] = custom_pin1.getValue();
-                // jsonToFile["Pin2"] = custom_pin2.getValue();
-                // jsonToFile["Pin3"] = custom_pin3.getValue();
-                // jsonToFile["Pin4"] = custom_pin4.getValue();
-                // jsonToFile["Pin5"] = custom_pin5.getValue();
-                // jsonToFile["Pin6"] = custom_pin6.getValue();
-                // jsonToFile["Pin7"] = custom_pin7.getValue();
-                // jsonToFile["Pin8"] = custom_pin8.getValue();
-                // jsonToFile["Pin9"] = custom_pin9.getValue();
-                             
+        // check in the case of pin > 8 
+        if(pinId > wifiParamsPins.size()) return;
+
+        String state = jsonPair.value();
+        if(pinId>0){
+            int pinOut = String(wifiParamsPins[pinId-1].getID()).toInt();
+            if(state == "x" || state == "X"){
+                state = (String)!digitalRead(pinOut);
             }
+            digitalWrite(pinOut,state.toInt()); 
+          
         }
-        // writeFile(LittleFS, filepath, jsonToFile.as<String>().c_str());
-        // jsonToFile.clear();  
+    }
+    fileJson.clear();   
+    
+    // report pins states
+    String reportedMessage =  String("{\"state\": {\"reported\": {") +
+        "\"pin"  + String(custom_pin1.getValue())+"\": " + String(digitalRead(atoi(custom_pin1.getID()))) +
+        ",\"pin" + String(custom_pin2.getValue())+"\": " + String(digitalRead(atoi(custom_pin2.getID()))) + 
+        ",\"pin" + String(custom_pin3.getValue())+"\": " + String(digitalRead(atoi(custom_pin3.getID()))) + 
+        ",\"pin" + String(custom_pin4.getValue())+"\": " + String(digitalRead(atoi(custom_pin4.getID()))) + 
+        ",\"pin" + String(custom_pin5.getValue())+"\": " + String(digitalRead(atoi(custom_pin5.getID()))) + 
+        ",\"pin" + String(custom_pin6.getValue())+"\": " + String(digitalRead(atoi(custom_pin6.getID()))) + 
+        ",\"pin" + String(custom_pin7.getValue())+"\": " + String(digitalRead(atoi(custom_pin7.getID()))) + 
+        ",\"pin" + String(custom_pin8.getValue())+"\": " + String(digitalRead(atoi(custom_pin8.getID()))) + 
+        "}}}";
+    client.publish(pub_topic, reportedMessage.c_str());
+    writeFile(LittleFS, filepathStates, reportedMessage.c_str());
 
-        String reportedMessage = "{\"state\": {\"reported\": {"+
-            String("\"pin") + String(custom_pin1.getValue())+"\": " + String(digitalRead(atoi(custom_pin1.getID()))) +
-            ",\"pin" + String(custom_pin3.getValue())+"\": " + String(digitalRead(atoi(custom_pin3.getID()))) + 
-            ",\"pin" + String(custom_pin2.getValue())+"\": " + String(digitalRead(atoi(custom_pin2.getID()))) + 
-            ",\"pin" + String(custom_pin4.getValue())+"\": " + String(digitalRead(atoi(custom_pin4.getID()))) + 
-            ",\"pin" + String(custom_pin5.getValue())+"\": " + String(digitalRead(atoi(custom_pin5.getID()))) + 
-            ",\"pin" + String(custom_pin6.getValue())+"\": " + String(digitalRead(atoi(custom_pin6.getID()))) + 
-            ",\"pin" + String(custom_pin7.getValue())+"\": " + String(digitalRead(atoi(custom_pin7.getID()))) + 
-            ",\"pin" + String(custom_pin8.getValue())+"\": " + String(digitalRead(atoi(custom_pin8.getID()))) + 
-            "}}}";
-        
-        client.publish(pub_topic, reportedMessage.c_str());
 
-    } else Serial.print("pyload should be json");
+    
 }
 
 boolean reconnect(){

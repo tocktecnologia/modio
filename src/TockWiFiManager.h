@@ -17,12 +17,12 @@ WiFiManagerParameter custom_pin5("14", "GPIO 14", "5", 3); //D5
 WiFiManagerParameter custom_pin6("12", "GPIO 12", "6", 3); //D6
 WiFiManagerParameter custom_pin7("13", "GPIO 13", "7", 3); //D7
 WiFiManagerParameter custom_pin8("15", "GPIO 15", "8", 3); //D8
-WiFiManagerParameter custom_pin9("10", "GPIO 10", "9", 3); //S3
+// WiFiManagerParameter custom_pin9("10", "GPIO 10", "9", 3); //S3
 
-std::vector<WiFiManagerParameter> wifiParamsPins(12);
+std::vector<WiFiManagerParameter> wifiParamsPins(8);
 
-
-const char * filepath = "/configs.json";
+const char * filepathStates = "/config_states.json";
+const char * filepath = "/config.json";
 const char * wiFiPassword = "tock1234";
 void checkConfigButton();
 void saveParamsCallback();
@@ -40,7 +40,9 @@ void setupWM() {
     // Open file saved tp retrieve json
     if (!LittleFS.begin()){
         Serial.println("LittleFS mount failed");return;
-    }
+    }   
+
+    // read pins configurations
     String filedata = readFile(LittleFS, filepath);
     StaticJsonDocument<256> fileJson;
     JsonObject fileJsonObj;
@@ -59,7 +61,7 @@ void setupWM() {
         custom_pin6.setValue(fileJsonObj["Pin6"].as<String>().c_str(),3);
         custom_pin7.setValue(fileJsonObj["Pin7"].as<String>().c_str(),3);
         custom_pin8.setValue(fileJsonObj["Pin8"].as<String>().c_str(),3);
-        custom_pin9.setValue(fileJsonObj["Pin9"].as<String>().c_str(),3);
+        // custom_pin9.setValue(fileJsonObj["Pin9"].as<String>().c_str(),3);
     
 
         fileJson.clear();
@@ -77,7 +79,7 @@ void setupWM() {
     wm.addParameter(&custom_pin6);
     wm.addParameter(&custom_pin7);
     wm.addParameter(&custom_pin8);
-    wm.addParameter(&custom_pin9);
+    // wm.addParameter(&custom_pin9);
 
     wm.setSaveParamsCallback(saveParamsCallback);
     wm.setConnectTimeout(30);
@@ -111,7 +113,7 @@ void saveParamsCallback () {
     jsonToFile["Pin6"] = custom_pin6.getValue();
     jsonToFile["Pin7"] = custom_pin7.getValue();
     jsonToFile["Pin8"] = custom_pin8.getValue();
-    jsonToFile["Pin9"] = custom_pin9.getValue();
+    // jsonToFile["Pin9"] = custom_pin9.getValue();
 
     writeFile(LittleFS, filepath, jsonToFile.as<String>().c_str());
 
@@ -148,17 +150,37 @@ void configurePins(){
         wifiParamsPins.push_back(custom_pin6);
         wifiParamsPins.push_back(custom_pin7);
         wifiParamsPins.push_back(custom_pin8);
-        wifiParamsPins.push_back(custom_pin9);
+        // wifiParamsPins.push_back(custom_pin9);
 
+        
+        StaticJsonDocument<256> fileJson;
+        String filedata = readFile(LittleFS, filepathStates);
+        deserializeJson(fileJson, filedata);
+        // serializeJsonPretty(fileJson,Serial); //debug
+        // Serial.println();
+
+        // configs
         for(unsigned int i=0;i<wifiParamsPins.size();i++){
+            // ModIn
             int pinId = String(wifiParamsPins[i].getID()).toInt();
             if(String(custom_io.getValue()) == "i"){
                 pinMode(pinId, INPUT);
             }
+            // ModOut
             else {
                 pinMode(pinId, OUTPUT);
+               
+                if(filedata!=String()){
+                    auto key = "pin" + String(i+1);
+                    auto stateMemory = fileJson.as<JsonObject>()["state"]["reported"][key.c_str()].as<String>().toInt();
+                    digitalWrite(pinId,stateMemory);
+                
+                    String debug = key + ": (GPIO " + pinId +  "):" + String(stateMemory);
+                    Serial.println(debug);
+                }
             } 
         }
-
+        fileJson.clear();   
+        filedata.clear();
 
 }
