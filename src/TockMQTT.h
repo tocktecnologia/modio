@@ -15,15 +15,6 @@ unsigned long lastMsg = 0;
 long lastReconnectAttempt = 0;
 
 
-int getPinIdOutput(int pinIdReceivedMqtt){
-    for(unsigned int i=0;i<wifiParamsPins.size();i++){
-        int pinIdConfigured = String(wifiParamsPins[i].getValue()).toInt();
-        if(pinIdReceivedMqtt==pinIdConfigured) 
-            return String(wifiParamsPins[i].getID()).toInt();
-    }
-    return -1;
-}
-
 void callback(char *topic, byte *payload, unsigned int length)
 {               
     // Reading message 
@@ -56,7 +47,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     for (JsonPair jsonPair : fileJsonObj) {
         int pinIdReceivedMqtt = String(jsonPair.key().c_str()).substring(3).toInt(); // jsonPair.key = "pin3"
         
-        int pinIdOutput = getPinIdOutput(pinIdReceivedMqtt);
+        int pinIdOutput = getPinIdOutput(pinIdReceivedMqtt,wifiParamsPins);
         // if some pin received from mqtt is configured, update output and enable report states
         if(pinIdOutput>0) { 
 
@@ -161,34 +152,4 @@ void loopMQTT()
         // Client connected
         client.loop();
     }
-}
-
-void sendResponse(int index_state, String command)
-{
-    // delay(1);
-    // String pinSaida2;
-
-    // // Troca pinoXXX da mensagem Serial pelo pino da saída correta.
-    // DynamicJsonBuffer jsonBuffer2;
-    // JsonObject &jsPinos = jsonBuffer2.parseObject((jsonPinos));
-    // String comando = "pin" + String(command[index_state]) + String(command[index_state + 1]);
-
-    // for (JsonPair keyState : jsPinos)
-    // {
-    //     String key = keyState.key;
-    //     if (key == comando)
-    //     {
-    //         String pinSaida = jsPinos[key];
-    //         pinSaida2 = pinSaida;
-    //     }
-    // } // for
-
-    // String msg = "{\"" + pinSaida2 + "\": \"x\"}";
-
-    // String desiredState = "{\"state\": {\"desired\": " + msg + "}}";
-    // char desiredState_charBuf[100];
-    // desiredState.toCharArray(desiredState_charBuf, 100);
-    // client.publish(pub_topic, desiredState_charBuf);
-
-    // Serial.println("Mensagem publicada : " + desiredState);
 }

@@ -162,7 +162,6 @@ void configurePins(){
         String filedata = readFile(LittleFS, filepathStates);
         deserializeJson(fileJson, filedata);
         // serializeJsonPretty(fileJson,Serial); //debug
-        // Serial.println();
 
         // configs
         for(unsigned int i=0;i<wifiParamsPins.size();i++){
@@ -177,8 +176,9 @@ void configurePins(){
 
                 // if there're states in memory, update GPIOs
                 if(filedata!=String()){
-                    auto key = "pin" + String(i+1);
+                    auto key = String("pin" + String(wifiParamsPins[i].getValue()));
                     auto stateMemory = fileJson.as<JsonObject>()["state"]["reported"][key.c_str()].as<String>().toInt();
+                  
                     digitalWrite(pinId,stateMemory);
                 
                     String debug = key + ": (GPIO " + pinId +  "):" + String(stateMemory);

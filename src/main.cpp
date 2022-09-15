@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include "TockWiFiManager.h"
 #include "TockMQTT.h"
-#include "OtaUpdate.h"
+// #include "OtaUpdate.h"
 
 void setup()
 {
