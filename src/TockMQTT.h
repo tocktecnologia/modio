@@ -54,9 +54,9 @@ void callback(char *topic, byte *payload, unsigned int length)
             // update pin output
             String state = jsonPair.value();
             if(state == "x" || state == "X"){
-                state = (String)!digitalRead(pinIdOutput);
+                state = (String)digitalRead(pinIdOutput);
             }
-            digitalWrite(pinIdOutput,state.toInt()); 
+            digitalWrite(pinIdOutput,!state.toInt()); 
             canReport = true;
         }
             
@@ -68,14 +68,14 @@ void callback(char *topic, byte *payload, unsigned int length)
 
     // report pins states
     String reportedMessage =  String("{\"state\": {\"reported\": {") +
-        "\"pin"  + String(custom_pin1.getValue())+"\": " + String(digitalRead(atoi(custom_pin1.getID()))) +
-        ",\"pin" + String(custom_pin2.getValue())+"\": " + String(digitalRead(atoi(custom_pin2.getID()))) + 
-        ",\"pin" + String(custom_pin3.getValue())+"\": " + String(digitalRead(atoi(custom_pin3.getID()))) + 
-        ",\"pin" + String(custom_pin4.getValue())+"\": " + String(digitalRead(atoi(custom_pin4.getID()))) + 
-        ",\"pin" + String(custom_pin5.getValue())+"\": " + String(digitalRead(atoi(custom_pin5.getID()))) + 
-        ",\"pin" + String(custom_pin6.getValue())+"\": " + String(digitalRead(atoi(custom_pin6.getID()))) + 
-        ",\"pin" + String(custom_pin7.getValue())+"\": " + String(digitalRead(atoi(custom_pin7.getID()))) + 
-        ",\"pin" + String(custom_pin8.getValue())+"\": " + String(digitalRead(atoi(custom_pin8.getID()))) + 
+        "\"pin"  + String(custom_pin1.getValue())+"\": " + String(!digitalRead(atoi(custom_pin1.getID()))) +
+        ",\"pin" + String(custom_pin2.getValue())+"\": " + String(!digitalRead(atoi(custom_pin2.getID()))) + 
+        ",\"pin" + String(custom_pin3.getValue())+"\": " + String(!digitalRead(atoi(custom_pin3.getID()))) + 
+        ",\"pin" + String(custom_pin4.getValue())+"\": " + String(!digitalRead(atoi(custom_pin4.getID()))) + 
+        ",\"pin" + String(custom_pin5.getValue())+"\": " + String(!digitalRead(atoi(custom_pin5.getID()))) + 
+        ",\"pin" + String(custom_pin6.getValue())+"\": " + String(!digitalRead(atoi(custom_pin6.getID()))) + 
+        ",\"pin" + String(custom_pin7.getValue())+"\": " + String(!digitalRead(atoi(custom_pin7.getID()))) + 
+        ",\"pin" + String(custom_pin8.getValue())+"\": " + String(!digitalRead(atoi(custom_pin8.getID()))) + 
         "}}}";
     
     Serial.println("reporting states: " + reportedMessage);

@@ -179,7 +179,7 @@ void configurePins(){
                     auto key = String("pin" + String(wifiParamsPins[i].getValue()));
                     auto stateMemory = fileJson.as<JsonObject>()["state"]["reported"][key.c_str()].as<String>().toInt();
                   
-                    digitalWrite(pinId,stateMemory);
+                    digitalWrite(pinId,!stateMemory);
                 
                     String debug = key + ": (GPIO " + pinId +  "):" + String(stateMemory);
                     Serial.println(debug);
