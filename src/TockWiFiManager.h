@@ -44,7 +44,7 @@ void setupWM() {
 
     // read pins configurations
     String filedata = readFile(LittleFS, filepath);
-    StaticJsonDocument<256> fileJson;
+    DynamicJsonDocument fileJson(256);
     JsonObject fileJsonObj;
     if (filedata != String()){
         deserializeJson(fileJson, filedata);
@@ -81,8 +81,11 @@ void setupWM() {
     wm.addParameter(&custom_pin8);
     // wm.addParameter(&custom_pin9);
 
-    wm.setSaveParamsCallback(saveParamsCallback);
+    wm.setWiFiAutoReconnect(true);
+    wm.setConfigPortalTimeout(90);
     wm.setConnectTimeout(30);
+    wm.setSaveParamsCallback(saveParamsCallback);
+    
     String thingName = esp8266ID();
     String clientId = "TOCK-" + thingName;
     if(wm.autoConnect(clientId.c_str(),wiFiPassword)){
@@ -98,7 +101,9 @@ void setupWM() {
 
 void loopWM() {
     wm.process();
-    checkConfigButton();
+    // checkConfigButton();
+    
+
 }
 
 void saveParamsCallback () {
@@ -169,7 +174,8 @@ void configurePins(){
             // ModOut
             else {
                 pinMode(pinId, OUTPUT);
-               
+
+                // if there're states in memory, update GPIOs
                 if(filedata!=String()){
                     auto key = "pin" + String(i+1);
                     auto stateMemory = fileJson.as<JsonObject>()["state"]["reported"][key.c_str()].as<String>().toInt();

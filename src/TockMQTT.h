@@ -14,37 +14,49 @@ PubSubClient client(espClient);
 unsigned long lastMsg = 0;
 long lastReconnectAttempt = 0;
 
+
+bool pinIsConfigured(int pinIdReceivedMqtt){
+    for(unsigned int i=0;i<wifiParamsPins.size();i++){
+        int pinIdConfigured = String(wifiParamsPins[i].getID()).toInt();
+        if(pinIdReceivedMqtt==pinIdConfigured) return true;
+    }
+    return true;
+}
+
 void callback(char *topic, byte *payload, unsigned int length)
-{
-    Serial.print("Message arrived [");
-    Serial.print(topic);
-    Serial.print("] ");
+{               
+    // Reading message 
+    // Serial.print("Message arrived [");
+    // Serial.print(topic);
+    // Serial.print("] ");
     String payloadString = "";
     for (int i = 0; i < length; i++)
     {
-        Serial.print((char)payload[i]);
+        // Serial.print((char)payload[i]);
         payloadString = payloadString + (char)payload[i];
     }
-    Serial.println();
 
-     // if is no a output module finsish
+    // build json desired with message arrived
     if(String(custom_io.getValue()) != "o") return;
-
     StaticJsonDocument<256> fileJson;
     JsonObject fileJsonObj;
     deserializeJson(fileJson, payloadString);
-    fileJsonObj = fileJson.as<JsonObject>()["state"]["desired"];
-    // serializeJsonPretty(fileJson,Serial); //debug
-
-    if(!fileJson.as<JsonObject>()["state"].containsKey("desired")) return;
     
+    if(!fileJson.as<JsonObject>()["state"].containsKey("desired")) {return;}
+
+    Serial.println("Message desired arrived: " + payloadString);
+
+    fileJsonObj = fileJson.as<JsonObject>()["state"]["desired"];
+    // serializeJsonPretty(fileJson,Serial); //debug   
     fileJson.clear();   
-    // iterate over the messsage json
+    
+    // iterate over the messsage desired 
     for (JsonPair jsonPair : fileJsonObj) {
         int pinId = String(jsonPair.key().c_str()).substring(3).toInt(); // jsonPair.key = "pin3"
-
-        // check in the case of pin > 8 
-        if(pinId > wifiParamsPins.size()) return;
+       
+        // checking if pin is confiured 
+        Serial.println("pinId: " + String(pinId));
+        if(!pinIsConfigured(pinId)) return;
 
         String state = jsonPair.value();
         if(pinId>0){
@@ -53,10 +65,9 @@ void callback(char *topic, byte *payload, unsigned int length)
                 state = (String)!digitalRead(pinOut);
             }
             digitalWrite(pinOut,state.toInt()); 
-          
         }
     }
-    fileJson.clear();   
+    fileJsonObj.clear();   
     
     // report pins states
     String reportedMessage =  String("{\"state\": {\"reported\": {") +
@@ -69,6 +80,8 @@ void callback(char *topic, byte *payload, unsigned int length)
         ",\"pin" + String(custom_pin7.getValue())+"\": " + String(digitalRead(atoi(custom_pin7.getID()))) + 
         ",\"pin" + String(custom_pin8.getValue())+"\": " + String(digitalRead(atoi(custom_pin8.getID()))) + 
         "}}}";
+    
+    Serial.println("reporting states: " + reportedMessage);
     client.publish(pub_topic, reportedMessage.c_str());
     writeFile(LittleFS, filepathStates, reportedMessage.c_str());
 
@@ -88,11 +101,22 @@ boolean reconnect(){
 
     if (client.connect(clientId.c_str(), broker_user, broker_pass))
     {
-        Serial.println(thingName + " connected!");
+        Serial.println(clientId + " connected to " + String(custom_server.getValue()) + "!");
         client.publish(pub_topic, "connected");
         client.subscribe(sub_topic);
         flipper.attach(1, flip);
        
+    }else {
+        // check if wifi is disconnected
+        if (WiFi.status() != WL_CONNECTED){
+            digitalWrite(LED_BUILTIN, 1);
+            wm.resetSettings(); // reset settings?
+            //  wm.setConfigPortalBlocking(false);
+            //  wm.startConfigPortal();
+            wm.startWebPortal();
+            delay(1000);
+            ESP.reset();
+        }
     }
 
     return client.connected();
