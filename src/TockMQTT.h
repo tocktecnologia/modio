@@ -17,7 +17,7 @@ long lastReconnectAttempt = 0;
 
 bool pinIsConfigured(int pinIdReceivedMqtt){
     for(unsigned int i=0;i<wifiParamsPins.size();i++){
-        int pinIdConfigured = String(wifiParamsPins[i].getID()).toInt();
+        int pinIdConfigured = String(wifiParamsPins[i].getValue()).toInt();
         if(pinIdReceivedMqtt==pinIdConfigured) return true;
     }
     return false;
@@ -53,9 +53,8 @@ void callback(char *topic, byte *payload, unsigned int length)
     // iterate over the messsage desired 
     for (JsonPair jsonPair : fileJsonObj) {
         int pinId = String(jsonPair.key().c_str()).substring(3).toInt(); // jsonPair.key = "pin3"
-       
+        
         // checking if pin is confiured 
-        Serial.println("pinId: " + String(pinId));
         if(!pinIsConfigured(pinId)) return;
 
         String state = jsonPair.value();
@@ -65,6 +64,8 @@ void callback(char *topic, byte *payload, unsigned int length)
                 state = (String)!digitalRead(pinOut);
             }
             digitalWrite(pinOut,state.toInt()); 
+
+            
         }
     }
     fileJsonObj.clear();   
