@@ -15,12 +15,13 @@ unsigned long lastMsg = 0;
 long lastReconnectAttempt = 0;
 
 
-bool pinIsConfigured(int pinIdReceivedMqtt){
+int getPinIdOutput(int pinIdReceivedMqtt){
     for(unsigned int i=0;i<wifiParamsPins.size();i++){
         int pinIdConfigured = String(wifiParamsPins[i].getValue()).toInt();
-        if(pinIdReceivedMqtt==pinIdConfigured) return true;
+        if(pinIdReceivedMqtt==pinIdConfigured) 
+            return String(wifiParamsPins[i].getID()).toInt();
     }
-    return false;
+    return -1;
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
@@ -51,25 +52,29 @@ void callback(char *topic, byte *payload, unsigned int length)
     fileJson.clear();   
     
     // iterate over the messsage desired 
+    bool canReport = false; 
     for (JsonPair jsonPair : fileJsonObj) {
-        int pinId = String(jsonPair.key().c_str()).substring(3).toInt(); // jsonPair.key = "pin3"
+        int pinIdReceivedMqtt = String(jsonPair.key().c_str()).substring(3).toInt(); // jsonPair.key = "pin3"
         
-        // checking if pin is confiured 
-        if(!pinIsConfigured(pinId)) return;
+        int pinIdOutput = getPinIdOutput(pinIdReceivedMqtt);
+        // if some pin received from mqtt is configured, update output and enable report states
+        if(pinIdOutput>0) { 
 
-        String state = jsonPair.value();
-        if(pinId>0){
-            int pinOut = String(wifiParamsPins[pinId-1].getID()).toInt();
+            // update pin output
+            String state = jsonPair.value();
             if(state == "x" || state == "X"){
-                state = (String)!digitalRead(pinOut);
+                state = (String)!digitalRead(pinIdOutput);
             }
-            digitalWrite(pinOut,state.toInt()); 
-
-            
+            digitalWrite(pinIdOutput,state.toInt()); 
+            canReport = true;
         }
+            
     }
     fileJsonObj.clear();   
-    
+
+    // if any one of the pins received from message mqtt is configured, not report state of all pins 
+    if(!canReport) return;
+
     // report pins states
     String reportedMessage =  String("{\"state\": {\"reported\": {") +
         "\"pin"  + String(custom_pin1.getValue())+"\": " + String(digitalRead(atoi(custom_pin1.getID()))) +
