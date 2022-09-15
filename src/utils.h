@@ -63,4 +63,14 @@ String writeFile(fs::FS &fs, const char *path, const char *message)
     }
 }
 
+
+int getPinIdOutput(int pinIdReceivedMqtt, std::vector<WiFiManagerParameter> &wifiParamsPins){
+    for(unsigned int i=0;i<wifiParamsPins.size();i++){
+        int pinIdConfigured = String(wifiParamsPins[i].getValue()).toInt();
+        if(pinIdReceivedMqtt==pinIdConfigured) 
+            return String(wifiParamsPins[i].getID()).toInt();
+    }
+    return -1;
+}
+
 #endif
