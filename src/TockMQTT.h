@@ -20,7 +20,7 @@ bool pinIsConfigured(int pinIdReceivedMqtt){
         int pinIdConfigured = String(wifiParamsPins[i].getID()).toInt();
         if(pinIdReceivedMqtt==pinIdConfigured) return true;
     }
-    return true;
+    return false;
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
