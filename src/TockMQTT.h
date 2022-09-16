@@ -50,13 +50,10 @@ void callback(char *topic, byte *payload, unsigned int length)
         int pinIdOutput = getPinIdOutput(pinIdReceivedMqtt,wifiParamsPins);
         // if some pin received from mqtt is configured, update output and enable report states
         if(pinIdOutput>0) { 
-
             // update pin output
             String state = jsonPair.value();
-            if(state == "x" || state == "X"){
-                state = (String)digitalRead(pinIdOutput);
-            }
-            digitalWrite(pinIdOutput,!state.toInt()); 
+            if(state != "1" ||  state != "0") state = (String)digitalRead(pinIdOutput);
+            digitalWrite(pinIdOutput,!state.toInt());  
             canReport = true;
         }
             
