@@ -14,10 +14,9 @@ PubSubClient client(espClient);
 unsigned long lastMsg = 0;
 long lastReconnectAttempt = 0;
 
-
 void callback(char *topic, byte *payload, unsigned int length)
-{               
-    // Reading message 
+{
+    // Reading message
     // Serial.print("Message arrived [");
     // Serial.print(topic);
     // Serial.print("] ");
@@ -29,61 +28,67 @@ void callback(char *topic, byte *payload, unsigned int length)
     }
 
     // build json desired with message arrived
-    if(String(custom_io.getValue()) != "o") return;
+    if (String(custom_io.getValue()) != "o")
+        return;
     StaticJsonDocument<256> fileJson;
     JsonObject fileJsonObj;
     deserializeJson(fileJson, payloadString);
-    
-    if(!fileJson.as<JsonObject>()["state"].containsKey("desired")) {return;}
+
+    if (!fileJson.as<JsonObject>()["state"].containsKey("desired"))
+    {
+        return;
+    }
 
     Serial.println("Message desired arrived: " + payloadString);
 
     fileJsonObj = fileJson.as<JsonObject>()["state"]["desired"];
-    // serializeJsonPretty(fileJson,Serial); //debug   
-    fileJson.clear();   
-    
-    // iterate over the messsage desired 
-    bool canReport = false; 
-    for (JsonPair jsonPair : fileJsonObj) {
+    // serializeJsonPretty(fileJson,Serial); //debug
+    fileJson.clear();
+
+    // iterate over the messsage desired
+    bool canReport = false;
+    for (JsonPair jsonPair : fileJsonObj)
+    {
         int pinIdReceivedMqtt = String(jsonPair.key().c_str()).substring(3).toInt(); // jsonPair.key = "pin3"
-        
-        int pinIdOutput = getPinIdOutput(pinIdReceivedMqtt,wifiParamsPins);
+
+        int pinIdOutput = getPinIdOutput(pinIdReceivedMqtt, wifiParamsPins);
         // if some pin received from mqtt is configured, update output and enable report states
-        if(pinIdOutput>0) { 
+        if (pinIdOutput > 0)
+        {
             // update pin output
             String state = jsonPair.value();
-            if(state != "1" ||  state != "0") state = (String)digitalRead(pinIdOutput);
-            digitalWrite(pinIdOutput,!state.toInt());  
+            if (state != "1" || state != "0")
+                state = (String)digitalRead(pinIdOutput);
+
+            digitalWrite(pinIdOutput, !state.toInt());
             canReport = true;
         }
-            
     }
-    fileJsonObj.clear();   
+    fileJsonObj.clear();
 
-    // if any one of the pins received from message mqtt is configured, not report state of all pins 
-    if(!canReport) return;
+    // if any one of the pins received from message mqtt is configured, not report state of all pins
+    if (!canReport)
+        return;
 
     // report pins states
-    String reportedMessage =  String("{\"state\": {\"reported\": {") +
-        "\"pin"  + String(custom_pin1.getValue())+"\": " + String(!digitalRead(atoi(custom_pin1.getID()))) +
-        ",\"pin" + String(custom_pin2.getValue())+"\": " + String(!digitalRead(atoi(custom_pin2.getID()))) + 
-        ",\"pin" + String(custom_pin3.getValue())+"\": " + String(!digitalRead(atoi(custom_pin3.getID()))) + 
-        ",\"pin" + String(custom_pin4.getValue())+"\": " + String(!digitalRead(atoi(custom_pin4.getID()))) + 
-        ",\"pin" + String(custom_pin5.getValue())+"\": " + String(!digitalRead(atoi(custom_pin5.getID()))) + 
-        ",\"pin" + String(custom_pin6.getValue())+"\": " + String(!digitalRead(atoi(custom_pin6.getID()))) + 
-        ",\"pin" + String(custom_pin7.getValue())+"\": " + String(!digitalRead(atoi(custom_pin7.getID()))) + 
-        ",\"pin" + String(custom_pin8.getValue())+"\": " + String(!digitalRead(atoi(custom_pin8.getID()))) + 
-        "}}}";
-    
+    String reportedMessage = String("{\"state\": {\"reported\": {") +
+                             "\"pin" + String(custom_pin1.getValue()) + "\": " + String(!digitalRead(atoi(custom_pin1.getID()))) +
+                             ",\"pin" + String(custom_pin2.getValue()) + "\": " + String(!digitalRead(atoi(custom_pin2.getID()))) +
+                             ",\"pin" + String(custom_pin3.getValue()) + "\": " + String(!digitalRead(atoi(custom_pin3.getID()))) +
+                             ",\"pin" + String(custom_pin4.getValue()) + "\": " + String(!digitalRead(atoi(custom_pin4.getID()))) +
+                             ",\"pin" + String(custom_pin5.getValue()) + "\": " + String(!digitalRead(atoi(custom_pin5.getID()))) +
+                             ",\"pin" + String(custom_pin6.getValue()) + "\": " + String(!digitalRead(atoi(custom_pin6.getID()))) +
+                             ",\"pin" + String(custom_pin7.getValue()) + "\": " + String(!digitalRead(atoi(custom_pin7.getID()))) +
+                             ",\"pin" + String(custom_pin8.getValue()) + "\": " + String(!digitalRead(atoi(custom_pin8.getID()))) +
+                             "}}}";
+
     Serial.println("reporting states: " + reportedMessage);
     client.publish(pub_topic, reportedMessage.c_str());
     writeFile(LittleFS, filepathStates, reportedMessage.c_str());
-
-
-    
 }
 
-boolean reconnect(){
+boolean reconnect()
+{
     String thingName = esp8266ID();
     String clientId = "TOCK-" + thingName + "-";
     clientId += String(random(0xffff), HEX);
@@ -99,19 +104,19 @@ boolean reconnect(){
         client.publish(pub_topic, "connected");
         client.subscribe(sub_topic);
         flipper.attach(1, flip);
-       
-    }else {
-        // check if wifi is disconnected
-        if (WiFi.status() != WL_CONNECTED){
-            digitalWrite(LED_BUILTIN, 1);
-            wm.resetSettings(); // reset settings?
-            //  wm.setConfigPortalBlocking(false);
-            //  wm.startConfigPortal();
-            wm.startWebPortal();
-            delay(1000);
-            ESP.reset();
-        }
     }
+    // else {
+    //     // check if wifi is disconnected
+    //     if (WiFi.status() != WL_CONNECTED){
+    //         digitalWrite(LED_BUILTIN, 1);
+    //         wm.resetSettings(); // reset settings?
+    //         //  wm.setConfigPortalBlocking(false);
+    //         //  wm.startConfigPortal();
+    //         wm.startWebPortal();
+    //         delay(1000);
+    //         ESP.reset();
+    //     }
+    // }
 
     return client.connected();
 }
@@ -125,7 +130,6 @@ void setupMQTT()
     // for(int i=0; i<pins.size();i++){
     //     Serial.print(String("i[")+ String(i) + "]: ");Serial.println(pins.at(i));
     // }
-
 }
 
 void loopMQTT()
