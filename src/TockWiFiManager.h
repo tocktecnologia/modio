@@ -66,6 +66,8 @@ void setupWM()
         custom_pin8.setValue(fileJsonObj["Pin8"].as<String>().c_str(), 3);
         // custom_pin9.setValue(fileJsonObj["Pin9"].as<String>().c_str(),3);
 
+        configurePins();
+
         fileJson.clear();
         fileJsonObj.clear();
     }
@@ -96,7 +98,6 @@ void setupWM()
     {
         Serial.println("connected...yeey :)");
         flipper.attach(0.2, flip);
-        configurePins();
     }
     else
     {
@@ -112,6 +113,8 @@ void loopWM()
 
 void saveParamsCallback()
 {
+    configurePins();
+
     StaticJsonDocument<256> jsonToFile;
     jsonToFile["io"] = custom_io.getValue();
     jsonToFile["server"] = custom_server.getValue();
@@ -126,7 +129,6 @@ void saveParamsCallback()
     // jsonToFile["Pin9"] = custom_pin9.getValue();
 
     writeFile(LittleFS, filepath, jsonToFile.as<String>().c_str());
-
     jsonToFile.clear();
 }
 
