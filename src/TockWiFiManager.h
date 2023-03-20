@@ -6,21 +6,24 @@
 
 WiFiManager wm;
 WiFiManagerParameter custom_io("IO", "In/Out", "o", 1);
-WiFiManagerParameter custom_server("server", "server", "192.168.0.16", 25);
+WiFiManagerParameter custom_server("server", "server", "192.168.0.32", 25);
 WiFiManagerParameter custom_pin1("16", "GPIO 16", "1", 3); // D0
 WiFiManagerParameter custom_pin2("5", "GPIO 05", "2", 3);  // D1
 WiFiManagerParameter custom_pin3("4", "GPIO 04", "3", 3);  // D2
 WiFiManagerParameter custom_pin4("14", "GPIO 14", "4", 3); // D5
 WiFiManagerParameter custom_pin5("12", "GPIO 12", "5", 3); // D6
 WiFiManagerParameter custom_pin6("13", "GPIO 13", "6", 3); // D7
-WiFiManagerParameter custom_pin7("15", "GPIO 15", "7", 3); // D8
-WiFiManagerParameter custom_pin8("3", "GPIO 03", "8", 3);  // RX
+WiFiManagerParameter custom_pin8("15", "GPIO 15", "8", 3); // RX  precisaria de um pull down ou pullup
+WiFiManagerParameter custom_pin7("3", "GPIO 03", "7", 3);  // D8// nao funciona como saida
+
+// WiFiManagerParameter custom_pin7("10", "GPIO 10", "7", 3); // D8// nao funciona como saida
+// WiFiManagerParameter custom_pin8("3", "GPIO 03", "8", 3); // RX
 // based in this image: https://i0.wp.com/randomnerdtutorials.com/wp-content/uploads/2019/05/ESP8266-NodeMCU-kit-12-E-pinout-gpio-pin.png?resize=817%2C542&quality=100&strip=all&ssl=1
 
 std::vector<WiFiManagerParameter> wifiParamsPins(8);
 
-const char *filepathStates = "/config_states.json";
-const char *filepath = "/config.json";
+const char *filepathStates = "/states.json";
+const char *filepath = "/conf.json";
 const char *wiFiPassword = "tock1234";
 void checkConfigButton();
 void saveParamsCallback();
@@ -33,9 +36,7 @@ void setupWM()
 
     // reset settings - wipe credentials for testing
     // wm.resetSettings();
-    // delay(5000000);
-    //  SPIFFS.format();
-    //  LittleFS.format();
+    // LittleFS.format();
 
     // Open file saved tp retrieve json
     if (!LittleFS.begin())
@@ -66,8 +67,6 @@ void setupWM()
         custom_pin8.setValue(fileJsonObj["Pin8"].as<String>().c_str(), 3);
         // custom_pin9.setValue(fileJsonObj["Pin9"].as<String>().c_str(),3);
 
-        configurePins();
-
         fileJson.clear();
         fileJsonObj.clear();
     }
@@ -94,6 +93,9 @@ void setupWM()
 
     String thingName = esp8266ID();
     String clientId = "TOCK-" + thingName;
+
+    configurePins();
+
     if (wm.autoConnect(clientId.c_str(), wiFiPassword))
     {
         Serial.println("connected...yeey :)");
@@ -113,7 +115,7 @@ void loopWM()
 
 void saveParamsCallback()
 {
-    configurePins();
+    // configurePins();
 
     StaticJsonDocument<256> jsonToFile;
     jsonToFile["io"] = custom_io.getValue();

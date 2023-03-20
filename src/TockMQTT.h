@@ -57,9 +57,13 @@ void callback(char *topic, byte *payload, unsigned int length)
         {
             // update pin output
             String state = jsonPair.value();
-            if (state != "1" || state != "0")
-                state = (String)digitalRead(pinIdOutput);
 
+            if (!(state.equals("0") || state.equals("1")))
+            {
+                state = (String)digitalRead(pinIdOutput);
+            }
+
+            pinMode(pinIdOutput, OUTPUT);
             digitalWrite(pinIdOutput, !state.toInt());
             canReport = true;
         }
