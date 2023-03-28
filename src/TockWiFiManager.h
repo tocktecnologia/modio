@@ -13,8 +13,8 @@ WiFiManagerParameter custom_pin3("4", "GPIO 04", "3", 3);  // D2
 WiFiManagerParameter custom_pin4("14", "GPIO 14", "4", 3); // D5
 WiFiManagerParameter custom_pin5("12", "GPIO 12", "5", 3); // D6
 WiFiManagerParameter custom_pin6("13", "GPIO 13", "6", 3); // D7
-WiFiManagerParameter custom_pin8("15", "GPIO 15", "8", 3); // RX  precisaria de um pull down ou pullup
 WiFiManagerParameter custom_pin7("3", "GPIO 03", "7", 3);  // D8// nao funciona como saida
+WiFiManagerParameter custom_pin8("15", "GPIO 15", "8", 3); // RX  precisaria de um pull down ou pullup
 
 // WiFiManagerParameter custom_pin7("10", "GPIO 10", "7", 3); // D8// nao funciona como saida
 // WiFiManagerParameter custom_pin8("3", "GPIO 03", "8", 3); // RX
