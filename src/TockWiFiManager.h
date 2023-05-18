@@ -7,14 +7,14 @@
 WiFiManager wm;
 WiFiManagerParameter custom_io("IO", "In/Out", "o", 1);
 WiFiManagerParameter custom_server("server", "server", "192.168.0.32", 25);
-WiFiManagerParameter custom_pin1("16", "GPIO 16", "1", 3); // D0
-WiFiManagerParameter custom_pin2("5", "GPIO 05", "2", 3);  // D1
-WiFiManagerParameter custom_pin3("4", "GPIO 04", "3", 3);  // D2
-WiFiManagerParameter custom_pin4("14", "GPIO 14", "4", 3); // D5
-WiFiManagerParameter custom_pin5("12", "GPIO 12", "5", 3); // D6
-WiFiManagerParameter custom_pin6("13", "GPIO 13", "6", 3); // D7
-WiFiManagerParameter custom_pin7("3", "GPIO 03", "7", 3);  // D8// nao funciona como saida
-WiFiManagerParameter custom_pin8("15", "GPIO 15", "8", 3); // RX  precisaria de um pull down ou pullup
+WiFiManagerParameter custom_pin1("16", "GPIO 16", "25", 3); // D0
+WiFiManagerParameter custom_pin2("5", "GPIO 05", "26", 3);  // D1
+WiFiManagerParameter custom_pin3("4", "GPIO 04", "27", 3);  // D2
+WiFiManagerParameter custom_pin4("14", "GPIO 14", "28", 3); // D5
+WiFiManagerParameter custom_pin5("12", "GPIO 12", "29", 3); // D6
+WiFiManagerParameter custom_pin6("13", "GPIO 13", "30", 3); // D7
+WiFiManagerParameter custom_pin7("2", "GPIO 02", "31", 3);  // RX  precisaria de um pull down ou pullup
+WiFiManagerParameter custom_pin8("3", "GPIO 03", "32", 3);  // D8// nao funciona como saida
 
 // WiFiManagerParameter custom_pin7("10", "GPIO 10", "7", 3); // D8// nao funciona como saida
 // WiFiManagerParameter custom_pin8("3", "GPIO 03", "8", 3); // RX
@@ -33,7 +33,7 @@ void setupWM()
 {
     WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
     Serial.begin(9600);
-
+    Serial.println("ID: " + esp8266ID());
     // reset settings - wipe credentials for testing
     // wm.resetSettings();
     // LittleFS.format();
@@ -47,7 +47,7 @@ void setupWM()
 
     // read pins configurations
     String filedata = readFile(LittleFS, filepath);
-    DynamicJsonDocument fileJson(256);
+    DynamicJsonDocument fileJson(512);
     JsonObject fileJsonObj;
     if (filedata != String())
     {
@@ -117,7 +117,7 @@ void saveParamsCallback()
 {
     // configurePins();
 
-    StaticJsonDocument<256> jsonToFile;
+    StaticJsonDocument<512> jsonToFile;
     jsonToFile["io"] = custom_io.getValue();
     jsonToFile["server"] = custom_server.getValue();
     jsonToFile["Pin1"] = custom_pin1.getValue();
@@ -134,24 +134,24 @@ void saveParamsCallback()
     jsonToFile.clear();
 }
 
-void checkConfigButton()
-{
-    if (digitalRead(TRIGGER_PORTAL))
-    {
-        delay(1000);
-        if (digitalRead(TRIGGER_PORTAL))
-        {
-            // flipper.detach(); // pisca lento se conectado ao wifi
-            digitalWrite(LED_BUILTIN, 1);
-            wm.resetSettings(); // reset settings?
-            //  wm.setConfigPortalBlocking(false);
-            //  wm.startConfigPortal();
-            wm.startWebPortal();
-            delay(1000);
-            ESP.reset();
-        }
-    }
-}
+// void checkConfigButton()
+// {
+//     if (digitalRead(TRIGGER_PORTAL))
+//     {
+//         delay(1000);
+//         if (digitalRead(TRIGGER_PORTAL))
+//         {
+//             // flipper.detach(); // pisca lento se conectado ao wifi
+//             digitalWrite(LED_BUILTIN, 1);
+//             wm.resetSettings(); // reset settings?
+//             //  wm.setConfigPortalBlocking(false);
+//             //  wm.startConfigPortal();
+//             wm.startWebPortal();
+//             delay(1000);
+//             ESP.reset();
+//         }
+//     }
+// }
 
 void configurePins()
 {
