@@ -13,12 +13,14 @@ WiFiManagerParameter custom_pin3("4", "GPIO 04", "27", 3);  // D2
 WiFiManagerParameter custom_pin4("14", "GPIO 14", "28", 3); // D5
 WiFiManagerParameter custom_pin5("12", "GPIO 12", "29", 3); // D6
 WiFiManagerParameter custom_pin6("13", "GPIO 13", "30", 3); // D7
-WiFiManagerParameter custom_pin7("2", "GPIO 02", "31", 3);  // RX  precisaria de um pull down ou pullup
-WiFiManagerParameter custom_pin8("3", "GPIO 03", "32", 3);  // D8// nao funciona como saida
+WiFiManagerParameter custom_pin7("2", "GPIO 02", "31", 3);  // D4?  
+WiFiManagerParameter custom_pin8("3", "GPIO 03", "32", 3);  // Rx // nao funciona como saida
 
 // WiFiManagerParameter custom_pin7("10", "GPIO 10", "7", 3); // D8// nao funciona como saida
 // WiFiManagerParameter custom_pin8("3", "GPIO 03", "8", 3); // RX
-// based in this image: https://i0.wp.com/randomnerdtutorials.com/wp-content/uploads/2019/05/ESP8266-NodeMCU-kit-12-E-pinout-gpio-pin.png?resize=817%2C542&quality=100&strip=all&ssl=1
+// based in this image: 
+//https://i0.wp.com/randomnerdtutorials.com/wp-content/uploads/2019/05/ESP8266-NodeMCU-kit-12-E-pinout-gpio-pin.png?resize=817%2C542&quality=100&strip=all&ssl=1
+
 
 std::vector<WiFiManagerParameter> wifiParamsPins(8);
 
