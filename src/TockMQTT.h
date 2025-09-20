@@ -6,6 +6,7 @@ const char *pub_topic = "tock-commands";
 const char *sub_topic = "tock-commands";
 const char *broker_user = "tocktec.com.br";
 const char *broker_pass = "tock30130tecnologia";
+String sub_topic_reset_wifi = "tock-reset-wifi";
 
 // WiFiUDP Udp;
 
@@ -16,16 +17,21 @@ long lastReconnectAttempt = 0;
 
 void callback(char *topic, byte *payload, unsigned int length)
 {
-    // Reading message
-    // Serial.print("Message arrived [");
-    // Serial.print(topic);
-    // Serial.print("] ");
+
     String payloadString = "";
     for (int i = 0; i < length; i++)
     {
-        // Serial.print((char)payload[i]);
         payloadString = payloadString + (char)payload[i];
     }
+
+    // String topicStr = String(topic);
+    // if (to'picStr.equals(sub_topic_reset_wifi))
+    // {
+    //     Serial.println("Reseting esp wifi settings ...");
+    //     delay(2000);
+    //     wm.resetSettings();
+    //     ESP.restart();
+    // }
 
     // build json desired with message arrived
     if (String(custom_io.getValue()) != "o")
@@ -72,7 +78,10 @@ void callback(char *topic, byte *payload, unsigned int length)
 
     // if any one of the pins received from message mqtt is configured, not report state of all pins
     if (!canReport)
+    {
+        Serial.println("Pin not configured");
         return;
+    }
 
     // report pins states
     String reportedMessage = String("{\"state\": {\"reported\": {") +
@@ -107,6 +116,7 @@ boolean reconnect()
         Serial.println(clientId + " connected to " + String(custom_server.getValue()) + "!");
         client.publish(pub_topic, "connected");
         client.subscribe(sub_topic);
+        client.subscribe(sub_topic_reset_wifi.c_str());
         flipper.attach(1, flip);
     }
     // else {

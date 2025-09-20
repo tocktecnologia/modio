@@ -7,20 +7,19 @@
 WiFiManager wm;
 WiFiManagerParameter custom_io("IO", "In/Out", "o", 1);
 WiFiManagerParameter custom_server("server", "server", "192.168.0.32", 25);
-WiFiManagerParameter custom_pin1("16", "GPIO 16", "25", 3); // D0
-WiFiManagerParameter custom_pin2("5", "GPIO 05", "26", 3);  // D1
-WiFiManagerParameter custom_pin3("4", "GPIO 04", "27", 3);  // D2
-WiFiManagerParameter custom_pin4("14", "GPIO 14", "28", 3); // D5
-WiFiManagerParameter custom_pin5("12", "GPIO 12", "29", 3); // D6
-WiFiManagerParameter custom_pin6("13", "GPIO 13", "30", 3); // D7
-WiFiManagerParameter custom_pin7("2", "GPIO 02", "31", 3);  // D4?  
-WiFiManagerParameter custom_pin8("3", "GPIO 03", "32", 3);  // Rx // nao funciona como saida
+WiFiManagerParameter custom_pin1("16", "GPIO 16", "998", 3); // D0
+WiFiManagerParameter custom_pin2("5", "GPIO 05", "66", 3);   // D1
+WiFiManagerParameter custom_pin3("4", "GPIO 04", "997", 3);  // D2
+WiFiManagerParameter custom_pin4("2", "GPIO 02", "996", 3);  // D5
+WiFiManagerParameter custom_pin5("14", "GPIO 14", "69", 3);  // D5
+WiFiManagerParameter custom_pin6("12", "GPIO 12", "70", 3);  // D6
+WiFiManagerParameter custom_pin7("13", "GPIO 13", "71", 3);  // D7
+WiFiManagerParameter custom_pin8("3", "GPIO 03", "72", 3);   // Rx
 
 // WiFiManagerParameter custom_pin7("10", "GPIO 10", "7", 3); // D8// nao funciona como saida
 // WiFiManagerParameter custom_pin8("3", "GPIO 03", "8", 3); // RX
-// based in this image: 
-//https://i0.wp.com/randomnerdtutorials.com/wp-content/uploads/2019/05/ESP8266-NodeMCU-kit-12-E-pinout-gpio-pin.png?resize=817%2C542&quality=100&strip=all&ssl=1
-
+// based in this image:
+// https://i0.wp.com/randomnerdtutorials.com/wp-content/uploads/2019/05/ESP8266-NodeMCU-kit-12-E-pinout-gpio-pin.png?resize=817%2C542&quality=100&strip=all&ssl=1
 
 std::vector<WiFiManagerParameter> wifiParamsPins(8);
 
@@ -98,14 +97,50 @@ void setupWM()
 
     configurePins();
 
-    if (wm.autoConnect(clientId.c_str(), wiFiPassword))
+    // if (wm.autoConnect(clientId.c_str(), wiFiPassword))
+    // {
+    //     Serial.println("connected...yeey :)");
+    //     flipper.attach(0.2, flip);
+    // }
+    // else
+    // {
+    //     Serial.println("Configportal running");
+    // }
+    WiFi.disconnect();
+    WiFi.begin("TOCK AUTO", "tocktecnologia");
+    while (true)
     {
-        Serial.println("connected...yeey :)");
-        flipper.attach(0.2, flip);
-    }
-    else
-    {
-        Serial.println("Configportal running");
+
+        switch (WiFi.status())
+        {
+        case WL_NO_SSID_AVAIL:
+            Serial.println("[WiFi] SSID not found");
+            break;
+        case WL_CONNECT_FAILED:
+            Serial.print("[WiFi] Failed - WiFi not connected! Reason: ");
+            return;
+            break;
+        case WL_CONNECTION_LOST:
+            Serial.println("[WiFi] Connection was lost");
+            break;
+        case WL_SCAN_COMPLETED:
+            Serial.println("[WiFi] Scan is completed");
+            break;
+        case WL_DISCONNECTED:
+            Serial.println("[WiFi] WiFi is disconnected");
+            break;
+        case WL_CONNECTED:
+            Serial.println("[WiFi] WiFi is connected!");
+            Serial.print("[WiFi] IP address: ");
+            Serial.println(WiFi.localIP());
+            return;
+            break;
+        default:
+            Serial.print("[WiFi] WiFi Status: ");
+            Serial.println(WiFi.status());
+            break;
+        }
+        delay(500);
     }
 }
 

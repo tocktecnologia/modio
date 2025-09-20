@@ -1,4 +1,4 @@
-#define LED_BUILTIN 15 // GPIO 2
+#define LED_BUILTIN 15 // GPIO 2 // D8
 
 #include <Arduino.h>
 #include "TockWiFiManager.h"
