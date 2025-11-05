@@ -15,6 +15,7 @@ WiFiManagerParameter custom_pin5("14", "GPIO 14", "69", 3);  // D5
 WiFiManagerParameter custom_pin6("12", "GPIO 12", "70", 3);  // D6
 WiFiManagerParameter custom_pin7("13", "GPIO 13", "71", 3);  // D7
 WiFiManagerParameter custom_pin8("3", "GPIO 03", "72", 3);   // Rx
+                                                             // D8 - LED
 
 // WiFiManagerParameter custom_pin7("10", "GPIO 10", "7", 3); // D8// nao funciona como saida
 // WiFiManagerParameter custom_pin8("3", "GPIO 03", "8", 3); // RX
