@@ -10,7 +10,7 @@ WiFiManagerParameter custom_server("server", "server", "192.168.0.32", 25);
 WiFiManagerParameter custom_pin1("16", "GPIO 16", "998", 3); // D0
 WiFiManagerParameter custom_pin2("5", "GPIO 05", "66", 3);   // D1
 WiFiManagerParameter custom_pin3("4", "GPIO 04", "997", 3);  // D2
-WiFiManagerParameter custom_pin4("2", "GPIO 02", "996", 3);  // D5
+WiFiManagerParameter custom_pin4("2", "GPIO 02", "996", 3);  // D4
 WiFiManagerParameter custom_pin5("14", "GPIO 14", "69", 3);  // D5
 WiFiManagerParameter custom_pin6("12", "GPIO 12", "70", 3);  // D6
 WiFiManagerParameter custom_pin7("13", "GPIO 13", "71", 3);  // D7
